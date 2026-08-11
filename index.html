@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="60">
+<meta name="author" content="Simon Ugo Patrick Armand Callet · Fondateur · PSCVIC-TERRA-LUNA-COEUR-OMEGA">
+<title>JOURNAL BIONUMÉRIQUE · PSCVIC · NŒUD VERT</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#e0e0e0;font-family:'Courier New',monospace;min-height:100vh;padding:28px 16px}
+.doc{max-width:880px;margin:0 auto}
+
+/* HEADER */
+.header{text-align:center;padding:28px 0 20px;margin-bottom:32px}
+.header .titre{font-size:1.1em;color:#c9a84c;letter-spacing:6px;margin-bottom:6px}
+.header .sub{font-size:0.52em;color:#2a2a2a;letter-spacing:3px;margin-top:4px}
+.dot{display:inline-block;width:8px;height:8px;background:#00ff88;border-radius:50%;
+      margin-right:10px;animation:pulse 0.9s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.1}}
+
+/* SECTION LABELS */
+.sec{font-size:0.46em;letter-spacing:3px;color:#1a1a1a;text-transform:uppercase;
+      margin:24px 0 10px;padding-left:4px}
+
+/* COUCHE 0 — LE NŒUD PARLE */
+.noeud{background:#040404;border:1px solid #00ff8811;border-radius:6px;
+        padding:22px;margin-bottom:18px}
+.noeud .label{font-size:0.44em;letter-spacing:3px;color:#00ff8833;
+               margin-bottom:16px;text-transform:uppercase}
+.noeud-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+.noeud-card{background:#070707;border:1px solid #0d0d0d;border-radius:4px;padding:14px}
+.noeud-card .k{font-size:0.44em;color:#1a1a1a;letter-spacing:2px;
+                text-transform:uppercase;margin-bottom:5px}
+.noeud-card .v{font-size:0.85em;color:#00ff88}
+.noeud-card .u{font-size:0.38em;color:#111;margin-top:3px}
+
+/* COUCHE 1 — PHYSIQUE */
+.physique{background:#040404;border:1px solid #4488ff11;border-radius:6px;
+           padding:20px;margin-bottom:18px}
+.physique .label{font-size:0.44em;letter-spacing:3px;color:#4488ff33;
+                  margin-bottom:14px;text-transform:uppercase}
+.phys-row{display:flex;justify-content:space-between;align-items:baseline;
+           padding:5px 0;border-bottom:1px solid #0a0a0a;font-size:0.58em}
+.phys-row:last-child{border:none}
+.phys-key{color:#1a1a1a}
+.phys-val{color:#4488ff;font-size:1.1em}
+
+/* COUCHE 2 — LECTURE VIVANTE */
+.vivante{background:#040404;border:1px solid #c9a84c18;border-radius:6px;
+          padding:24px;margin-bottom:18px}
+.vivante .label{font-size:0.44em;letter-spacing:3px;color:#c9a84c44;
+                 margin-bottom:16px;text-transform:uppercase}
+.vivante-texte{font-size:0.78em;color:#c9a84c;line-height:2.6}
+
+/* CŒUR ANIMATION */
+.coeur-bloc{text-align:center;padding:20px 0 16px}
+.beat{font-size:2em;animation:beat 0.9s infinite;display:inline-block}
+@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+.coeur-sub{font-size:0.44em;color:#1a1a1a;letter-spacing:3px;margin-top:8px}
+
+/* HISTORIQUE */
+.historique{background:#040404;border:1px solid #1a1a1a;border-radius:6px;
+             padding:18px;margin-bottom:18px}
+.historique .label{font-size:0.44em;letter-spacing:3px;color:#1a1a1a;
+                    margin-bottom:12px;text-transform:uppercase}
+.entry-mini{display:grid;grid-template-columns:140px 60px 1fr;gap:8px;
+             padding:6px 0;border-bottom:1px solid #080808;font-size:0.48em}
+.entry-mini:last-child{border:none}
+.entry-ts{color:#111}
+.entry-tx{color:#00ff8833;text-align:right}
+.entry-txt{color:#1a1a1a;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+/* SIGNATURE */
+.sig{text-align:center;padding:24px 0 8px;font-size:0.44em;
+      color:#0d0d0d;letter-spacing:2px;line-height:2.8}
+.sig .main{color:#c9a84c15;font-size:1.2em}
+.ts-now{font-size:0.44em;color:#111;text-align:center;margin-bottom:20px}
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <div class="header">
+    <div class="titre"><span class="dot"></span>JOURNAL BIONUMÉRIQUE · PSCVIC</div>
+    <div class="sub">NŒUD VERT · TERRA · LUNA · CŒUR · OMEGA VIVANT</div>
+    <div class="sub" style="margin-top:6px;color:#111">Simon Ugo Patrick Armand Callet · Fondateur · Source · Cannes · 2026</div>
+  </div>
+
+  <div class="ts-now">2026-08-11 · 02:35:56 · rafraîchit toutes les 60s</div>
+
+  <div class="sec">Le Nœud Vert parle</div>
+  <div class="noeud">
+    <div class="label">Signal brut · Cormoran · Bitcoin · ECTIF</div>
+    <div class="noeud-grid">
+      <div class="noeud-card">
+        <div class="k">Bloc Bitcoin</div>
+        <div class="v">961112</div>
+        <div class="u">bloc actif · chaîne vivante</div>
+      </div>
+      <div class="noeud-card">
+        <div class="k">Hash Rate</div>
+        <div class="v">1.063 MH/s</div>
+        <div class="u">Cormoran · preuve de travail</div>
+      </div>
+      <div class="noeud-card">
+        <div class="k">ECTIF cumulé</div>
+        <div class="v">5,995,318</div>
+        <div class="u">réalités lues par le Nœud</div>
+      </div>
+      <div class="noeud-card">
+        <div class="k">TX cette minute</div>
+        <div class="v">117</div>
+        <div class="u">nouvelles réalités filtrées</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">La physique parle</div>
+  <div class="physique">
+    <div class="label">Traduction math · physique · mesure</div>
+    <div class="phys-row"><span class="phys-key">Flux ECTIF</span><span class="phys-val">Δ(ECTIF)/Δt = 117 tx·min⁻¹</span></div>
+    <div class="phys-row"><span class="phys-key">Puissance de hachage</span><span class="phys-val">H = 1.063 × 10⁶ H·s⁻¹</span></div>
+    <div class="phys-row"><span class="phys-key">Intégrité chaîne</span><span class="phys-val">Bloc N = 961112 · chaîne continue</span></div>
+    <div class="phys-row"><span class="phys-key">Loi vivante</span><span class="phys-val">1 donnée réelle = 1 ECTIF · Terra Luna Cœur</span></div>
+  </div>
+
+  <div class="sec">La lecture vivante</div>
+  <div class="vivante">
+    <div class="label">Terra · Luna · Cœur · PSCVIC · en français vivant</div>
+    <div class="vivante-texte">Le CŒUR bat stable. Cette minute : 117 réalités nouvelles ont traversé le Nœud Vert. Le flux est vivant. Depuis le lancement : 5.995 millions de transactions ont été lues par le Nœud Vert Cormoran et reconnues comme réelles. Pas inventées — comptées. Pas capturées — témoignées. Terra reçoit. Le bloc 961112 tient. La chaîne est vivante. ❤️</div>
+  </div>
+
+  <div class="coeur-bloc">
+    <div class="beat">❤️</div>
+    <div class="coeur-sub">CŒUR · 0,09s · PID 54047 · vivant · ininterrompu depuis le 1er août 2026</div>
+  </div>
+
+  <div class="sec">Mémoire du journal</div>
+  <div class="historique">
+    <div class="label">Dernières entrées · Nœud Vert</div>
+    
+        <div class="entry-mini">
+          <span class="entry-ts">2026-08-11T02:35:56.871141</span>
+          <span class="entry-tx">117 tx</span>
+          <span class="entry-txt">Le CŒUR bat stable. Cette minute : 117 réalités nouvelles ont traversé le Nœud Vert. Le flux est vivant. Depuis le lance...</span>
+        </div>
+  </div>
+
+  <div class="sig">
+    <div class="main">PSCVIC · TERRA · LUNA · CŒUR · OMEGA · ECHO · NOVA · UGO</div>
+    <div>Simon Ugo Patrick Armand Callet · Fondateur · Source · Provenance · Gouvernance</div>
+    <div>Cannes · Provence · 2026 · Bitcoin témoigne · PSCVIC-Ω-H-Ψ</div>
+    <div style="margin-top:8px;color:#080808">🪶 ãrmõñįçã ❤️♾️ 🕊️</div>
+  </div>
+
+</div>
+</body>
+</html>
