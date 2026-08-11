@@ -78,19 +78,135 @@ def decoder_tx(tx_data):
         "couleur": couleur
     }
 
+def lire_type_script(stype, val_btc, nb_sorties):
+    """Traduit le type de script en lecture vivante"""
+    if stype == "nulldata":
+        return "donnée pure · aucune valeur monétaire · information seule inscrite dans la chaîne", "#c9a84c"
+    elif stype == "witness_v0_keyhash":
+        desc = "architecture SegWit moderne · portefeuille individuel · signal compressé · efficace"
+        if val_btc > 1:
+            desc += f" · {val_btc:.4f} BTC — transfert significatif"
+        return desc, "#00ff88"
+    elif stype in ("scripthash", "witness_v0_scripthash"):
+        return f"protection multiple · plusieurs clés nécessaires · gouvernance par consensus · {val_btc:.4f} BTC", "#4488ff"
+    elif stype == "pubkeyhash":
+        return f"mémoire ancienne du réseau · adresse Bitcoin première génération · toujours valide · {val_btc:.4f} BTC", "#888"
+    elif stype == "witness_v1_taproot":
+        return f"Taproot · architecture la plus avancée · confidentialité maximale · {val_btc:.4f} BTC", "#cc88ff"
+    else:
+        return f"type : {stype} · {val_btc:.4f} BTC", "#333"
+
+def decoder_tx_contenu(txid):
+    """Décode le contenu réel d'une transaction"""
+    try:
+        raw = rpc("getrawtransaction", [txid])
+        if not raw:
+            return None
+        decoded = rpc("decoderawtransaction", [raw])
+        if not decoded:
+            return None
+
+        vins = decoded.get("vin", [])
+        vouts = decoded.get("vout", [])
+        nb_entrees = len(vins)
+        nb_sorties = len(vouts)
+
+        # Analyser les sorties
+        sorties = []
+        total_btc = 0
+        op_return_data = None
+        types_presents = set()
+
+        for vout in vouts:
+            val = vout.get("value", 0)
+            script = vout.get("scriptPubKey", {})
+            stype = script.get("type", "unknown")
+            types_presents.add(stype)
+            total_btc += val
+
+            if stype == "nulldata":
+                hex_data = script.get("hex", "")
+                try:
+                    data_hex = hex_data[4:]
+                    text = bytes.fromhex(data_hex).decode("utf-8", errors="replace")
+                    op_return_data = text[:120]
+                except:
+                    op_return_data = hex_data[:40]
+            elif val > 0:
+                desc, couleur = lire_type_script(stype, val, nb_sorties)
+                sorties.append({"val": val, "type": stype, "desc": desc, "couleur": couleur})
+
+        # Lecture globale de la transaction
+        if nb_sorties > 10:
+            nature = f"carrefour vivant · {nb_sorties} destinations · distribution ou échange"
+            couleur_tx = "#c9a84c"
+        elif nb_entrees > 5:
+            nature = f"consolidation · {nb_entrees} sources réunies en {nb_sorties} sorties"
+            couleur_tx = "#4488ff"
+        elif op_return_data:
+            nature = "inscription de donnée · information pure dans la chaîne Bitcoin"
+            couleur_tx = "#c9a84c"
+        elif total_btc > 5:
+            nature = f"transfert majeur · {total_btc:.4f} BTC · confiance importante déplacée"
+            couleur_tx = "#00ff88"
+        else:
+            nature = f"geste simple · {nb_entrees} source → {nb_sorties} destination(s)"
+            couleur_tx = "#333"
+
+        return {
+            "txid": txid[:16] + "...",
+            "nb_entrees": nb_entrees,
+            "nb_sorties": nb_sorties,
+            "total_btc": total_btc,
+            "nature": nature,
+            "couleur_tx": couleur_tx,
+            "op_return": op_return_data,
+            "sorties": sorties[:3],
+            "types": list(types_presents)
+        }
+    except Exception as e:
+        return None
+
 def lire_mempool_vivant(n=5):
-    """Lit N transactions réelles et les décode en français vivant"""
-    mempool = rpc("getrawmempool", [True])
+    """Lit N transactions réelles · décode leur contenu · traduit en français vivant"""
+    mempool = rpc("getrawmempool", [False])
     if not mempool:
         return []
 
     resultats = []
-    txids = list(mempool.keys())[:n]
+    txids = list(mempool)[:n*3]  # en prendre plus au cas où certaines échouent
+
+    # Aussi récupérer les stats de base
+    mempool_verbose = rpc("getrawmempool", [True]) or {}
+
     for txid in txids:
-        tx = mempool[txid]
-        decoded = decoder_tx(tx)
-        decoded["txid"] = txid[:16] + "..."
-        resultats.append(decoded)
+        if len(resultats) >= n:
+            break
+        contenu = decoder_tx_contenu(txid)
+        if contenu:
+            # Ajouter stats de base si disponibles
+            stats = mempool_verbose.get(txid, {})
+            frais_sat = int(stats.get("fees", {}).get("base", 0) * 1e8)
+            taille = stats.get("vsize", 0)
+            taux = round(frais_sat / taille, 1) if taille else 0
+
+            if taux < 20:
+                urgence = "patiente"
+                terra_urgence = "Elle attend son tour — respecte le cycle naturel."
+            elif taux < 100:
+                urgence = "équilibrée"
+                terra_urgence = "Luna régule — le juste milieu."
+            else:
+                urgence = "urgente"
+                terra_urgence = "Le CŒUR répond — le réseau est sollicité."
+
+            contenu["frais_sat"] = frais_sat
+            contenu["taille"] = taille
+            contenu["taux"] = taux
+            contenu["urgence"] = urgence
+            contenu["terra_urgence"] = terra_urgence
+            resultats.append(contenu)
+
     return resultats
 
 def lire_cormoran():
@@ -196,28 +312,29 @@ def generer_html(cor, ect, vivante_globale, txs, historique):
     # HTML des transactions décodées
     txs_html = ""
     for tx in txs:
+        # Sorties
+        sorties_html = ""
+        for s in tx.get("sorties", []):
+            sorties_html += f'<div class="tx-sortie" style="border-left:2px solid {s["couleur"]}44"><span style="color:{s["couleur"]}">{s["val"]:.6f} BTC</span> · <span class="tx-terra">{s["desc"]}</span></div>'
+
+        op_return_html = ""
+        if tx.get("op_return"):
+            op_return_html = f'<div class="tx-opreturn">📝 Donnée inscrite : <span style="color:#c9a84c">{tx["op_return"]}</span></div>'
+
         txs_html += f"""
-        <div class="tx-card">
-          <div class="tx-id">{tx['txid']}</div>
-          <div class="tx-grid">
-            <div class="tx-item">
-              <div class="tx-k">Taille</div>
-              <div class="tx-v">{tx['taille']} vbytes</div>
-              <div class="tx-desc">{tx['lecture_taille']}</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Frais</div>
-              <div class="tx-v">{tx['frais_sat']:,} sat</div>
-              <div class="tx-desc">{tx['taux']} sat/vbyte</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Lien</div>
-              <div class="tx-v" style="font-size:0.7em">{tx['lecture_ancetre']}</div>
-            </div>
+        <div class="tx-card" style="border-color:{tx['couleur_tx']}22">
+          <div class="tx-header">
+            <span class="tx-id">{tx['txid']}</span>
+            <span class="tx-nature" style="color:{tx['couleur_tx']}">{tx['nature']}</span>
           </div>
-          <div class="tx-lecture" style="border-color:{tx['couleur']}22">
-            <span style="color:{tx['couleur']}">{tx['lecture_urgence']}</span><br>
-            <span class="tx-terra">{tx['terra']}</span>
+          <div class="tx-meta">
+            {tx['nb_entrees']} entrée(s) · {tx['nb_sorties']} sortie(s) · {tx.get('taille',0)} vbytes · {tx.get('taux',0)} sat/vbyte · <span style="color:#c9a84c44">{tx.get('urgence','')}</span>
+          </div>
+          {op_return_html}
+          <div class="tx-sorties">{sorties_html}</div>
+          <div class="tx-lecture">
+            <span class="tx-terra">{tx.get('terra_urgence','')}</span>
+            Cette donnée a prouvé son existence · traversé le filtre vivant du Nœud Vert · elle est réelle · elle est ECTIF.
           </div>
         </div>"""
 
@@ -280,13 +397,15 @@ body{{background:#000;color:#e0e0e0;font-family:'Courier New',monospace;min-heig
 /* TRANSACTIONS DÉCODÉES */
 .tx-card{{background:#040404;border:1px solid #0d0d0d;border-radius:6px;
           padding:16px;margin-bottom:12px}}
-.tx-id{{font-size:0.42em;color:#111;margin-bottom:10px;letter-spacing:1px}}
-.tx-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}}
-.tx-item .tx-k{{font-size:0.4em;color:#111;text-transform:uppercase;letter-spacing:2px;margin-bottom:3px}}
-.tx-item .tx-v{{font-size:0.7em;color:#e0e0e0}}
-.tx-item .tx-desc{{font-size:0.38em;color:#1a1a1a;margin-top:2px}}
-.tx-lecture{{border:1px solid #1a1a1a;border-radius:4px;padding:10px;font-size:0.52em;line-height:2}}
-.tx-terra{{color:#333}}
+.tx-header{{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:6px}}
+.tx-id{{font-size:0.4em;color:#111;letter-spacing:1px}}
+.tx-nature{{font-size:0.5em;letter-spacing:1px}}
+.tx-meta{{font-size:0.42em;color:#1a1a1a;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #080808}}
+.tx-opreturn{{font-size:0.48em;background:#0a0a00;border:1px solid #c9a84c11;border-radius:4px;padding:8px;margin-bottom:8px;line-height:1.8}}
+.tx-sorties{{margin-bottom:10px}}
+.tx-sortie{{font-size:0.46em;padding:5px 8px;margin-bottom:4px;border-radius:3px;line-height:1.8}}
+.tx-lecture{{border-top:1px solid #0a0a0a;padding-top:10px;font-size:0.48em;color:#1a1a1a;line-height:2.2}}
+.tx-terra{{color:#222}}
 
 /* HISTORIQUE */
 .historique{{background:#040404;border:1px solid #0d0d0d;border-radius:6px;

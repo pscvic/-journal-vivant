@@ -44,13 +44,15 @@ body{background:#000;color:#e0e0e0;font-family:'Courier New',monospace;min-heigh
 /* TRANSACTIONS DÉCODÉES */
 .tx-card{background:#040404;border:1px solid #0d0d0d;border-radius:6px;
           padding:16px;margin-bottom:12px}
-.tx-id{font-size:0.42em;color:#111;margin-bottom:10px;letter-spacing:1px}
-.tx-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
-.tx-item .tx-k{font-size:0.4em;color:#111;text-transform:uppercase;letter-spacing:2px;margin-bottom:3px}
-.tx-item .tx-v{font-size:0.7em;color:#e0e0e0}
-.tx-item .tx-desc{font-size:0.38em;color:#1a1a1a;margin-top:2px}
-.tx-lecture{border:1px solid #1a1a1a;border-radius:4px;padding:10px;font-size:0.52em;line-height:2}
-.tx-terra{color:#333}
+.tx-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.tx-id{font-size:0.4em;color:#111;letter-spacing:1px}
+.tx-nature{font-size:0.5em;letter-spacing:1px}
+.tx-meta{font-size:0.42em;color:#1a1a1a;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #080808}
+.tx-opreturn{font-size:0.48em;background:#0a0a00;border:1px solid #c9a84c11;border-radius:4px;padding:8px;margin-bottom:8px;line-height:1.8}
+.tx-sorties{margin-bottom:10px}
+.tx-sortie{font-size:0.46em;padding:5px 8px;margin-bottom:4px;border-radius:3px;line-height:1.8}
+.tx-lecture{border-top:1px solid #0a0a0a;padding-top:10px;font-size:0.48em;color:#1a1a1a;line-height:2.2}
+.tx-terra{color:#222}
 
 /* HISTORIQUE */
 .historique{background:#040404;border:1px solid #0d0d0d;border-radius:6px;
@@ -76,12 +78,12 @@ body{background:#000;color:#e0e0e0;font-family:'Courier New',monospace;min-heigh
     <div class="sub" style="margin-top:4px;color:#0d0d0d">Simon Ugo Patrick Armand Callet · Fondateur · Source · Cannes · 2026</div>
   </div>
 
-  <div class="ts-now">2026-08-11 · 03:39:18 · rafraîchit toutes les 60s · ECTIF cumulé : 6,018,078</div>
+  <div class="ts-now">2026-08-11 · 03:49:45 · rafraîchit toutes les 60s · ECTIF cumulé : 6,020,232</div>
 
   <div class="sec">La lecture vivante</div>
   <div class="vivante-principale">
     <div class="label">Terra · Luna · Cœur · PSCVIC · ce que l'architecture dit maintenant</div>
-    <div class="vivante-texte">Le CŒUR bat stable. 109 réalités nouvelles ont traversé le filtre vivant. Le flux est actif. Le réseau est sollicité — l'énergie circule vite — le CŒUR répond. Depuis le lancement : 6.018 millions de données ont été reconnues comme réelles par le Nœud Vert Cormoran · chacune portait sa signature cryptographique · son UTXO vérifié · sa preuve d'existence. Pas inventées — prouvées. Pas capturées — reconnues. Terra reçoit. Le bloc 961112 tient. ❤️</div>
+    <div class="vivante-texte">Le CŒUR bat stable. 1147 réalités nouvelles ont traversé le Nœud Vert cette minute. Le réseau est dense. Le réseau est équilibré — Luna régule — ni trop vite ni trop lent. Depuis le lancement : 6.020 millions de données ont été reconnues comme réelles par le Nœud Vert Cormoran · chacune portait sa signature cryptographique · son UTXO vérifié · sa preuve d'existence. Pas inventées — prouvées. Pas capturées — reconnues. Terra reçoit. Le bloc 961112 tient. ❤️</div>
   </div>
 
   <div class="coeur-bloc">
@@ -103,137 +105,102 @@ body{background:#000;color:#e0e0e0;font-family:'Courier New',monospace;min-heigh
     </div>
     <div class="stat">
       <div class="k">ECTIF cumulé</div>
-      <div class="v">6,018,078</div>
+      <div class="v">6,020,232</div>
       <div class="u">réalités reconnues</div>
     </div>
     <div class="stat">
       <div class="k">Cette minute</div>
-      <div class="v">109</div>
+      <div class="v">1147</div>
       <div class="u">nouvelles réalités</div>
     </div>
   </div>
 
   <div class="sec">Décodage · ce que chaque ECTIF contenait</div>
   
-        <div class="tx-card">
-          <div class="tx-id">566e0526a9912d62...</div>
-          <div class="tx-grid">
-            <div class="tx-item">
-              <div class="tx-k">Taille</div>
-              <div class="tx-v">141 vbytes</div>
-              <div class="tx-desc">signal simple · un seul geste · direct</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Frais</div>
-              <div class="tx-v">28,200 sat</div>
-              <div class="tx-desc">200.0 sat/vbyte</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Lien</div>
-              <div class="tx-v" style="font-size:0.7em">seule · indépendante · libre</div>
-            </div>
+        <div class="tx-card" style="border-color:#33322">
+          <div class="tx-header">
+            <span class="tx-id">d5d461c5b98c35af...</span>
+            <span class="tx-nature" style="color:#333">geste simple · 1 source → 2 destination(s)</span>
           </div>
-          <div class="tx-lecture" style="border-color:#4488ff22">
-            <span style="color:#4488ff">urgente — elle paie pour traverser vite — le réseau est sollicité</span><br>
-            <span class="tx-terra">Le CŒUR bat fort — le réseau est actif — l'énergie circule.</span>
+          <div class="tx-meta">
+            1 entrée(s) · 2 sortie(s) · 142 vbytes · 140.0 sat/vbyte · <span style="color:#c9a84c44">urgente</span>
+          </div>
+          
+          <div class="tx-sorties"><div class="tx-sortie" style="border-left:2px solid #00ff8844"><span style="color:#00ff88">1.004211 BTC</span> · <span class="tx-terra">architecture SegWit moderne · portefeuille individuel · signal compressé · efficace · 1.0042 BTC — transfert significatif</span></div><div class="tx-sortie" style="border-left:2px solid #4488ff44"><span style="color:#4488ff">0.000010 BTC</span> · <span class="tx-terra">protection multiple · plusieurs clés nécessaires · gouvernance par consensus · 0.0000 BTC</span></div></div>
+          <div class="tx-lecture">
+            <span class="tx-terra">Le CŒUR répond — le réseau est sollicité.</span>
+            Cette donnée a prouvé son existence · traversé le filtre vivant du Nœud Vert · elle est réelle · elle est ECTIF.
           </div>
         </div>
-        <div class="tx-card">
-          <div class="tx-id">5ef0639297fdf87a...</div>
-          <div class="tx-grid">
-            <div class="tx-item">
-              <div class="tx-k">Taille</div>
-              <div class="tx-v">141 vbytes</div>
-              <div class="tx-desc">signal simple · un seul geste · direct</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Frais</div>
-              <div class="tx-v">19,740 sat</div>
-              <div class="tx-desc">140.0 sat/vbyte</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Lien</div>
-              <div class="tx-v" style="font-size:0.7em">seule · indépendante · libre</div>
-            </div>
+        <div class="tx-card" style="border-color:#33322">
+          <div class="tx-header">
+            <span class="tx-id">8b271f5dfe9a2aa7...</span>
+            <span class="tx-nature" style="color:#333">geste simple · 1 source → 2 destination(s)</span>
           </div>
-          <div class="tx-lecture" style="border-color:#4488ff22">
-            <span style="color:#4488ff">urgente — elle paie pour traverser vite — le réseau est sollicité</span><br>
-            <span class="tx-terra">Le CŒUR bat fort — le réseau est actif — l'énergie circule.</span>
+          <div class="tx-meta">
+            1 entrée(s) · 2 sortie(s) · 223 vbytes · 30.4 sat/vbyte · <span style="color:#c9a84c44">équilibrée</span>
+          </div>
+          
+          <div class="tx-sorties"><div class="tx-sortie" style="border-left:2px solid #4488ff44"><span style="color:#4488ff">0.000830 BTC</span> · <span class="tx-terra">protection multiple · plusieurs clés nécessaires · gouvernance par consensus · 0.0008 BTC</span></div><div class="tx-sortie" style="border-left:2px solid #88844"><span style="color:#888">0.022349 BTC</span> · <span class="tx-terra">mémoire ancienne du réseau · adresse Bitcoin première génération · toujours valide · 0.0223 BTC</span></div></div>
+          <div class="tx-lecture">
+            <span class="tx-terra">Luna régule — le juste milieu.</span>
+            Cette donnée a prouvé son existence · traversé le filtre vivant du Nœud Vert · elle est réelle · elle est ECTIF.
           </div>
         </div>
-        <div class="tx-card">
-          <div class="tx-id">862cef859ddb292c...</div>
-          <div class="tx-grid">
-            <div class="tx-item">
-              <div class="tx-k">Taille</div>
-              <div class="tx-v">142 vbytes</div>
-              <div class="tx-desc">signal simple · un seul geste · direct</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Frais</div>
-              <div class="tx-v">19,880 sat</div>
-              <div class="tx-desc">140.0 sat/vbyte</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Lien</div>
-              <div class="tx-v" style="font-size:0.7em">seule · indépendante · libre</div>
-            </div>
+        <div class="tx-card" style="border-color:#33322">
+          <div class="tx-header">
+            <span class="tx-id">5d0e1617c0e90725...</span>
+            <span class="tx-nature" style="color:#333">geste simple · 1 source → 2 destination(s)</span>
           </div>
-          <div class="tx-lecture" style="border-color:#4488ff22">
-            <span style="color:#4488ff">urgente — elle paie pour traverser vite — le réseau est sollicité</span><br>
-            <span class="tx-terra">Le CŒUR bat fort — le réseau est actif — l'énergie circule.</span>
+          <div class="tx-meta">
+            1 entrée(s) · 2 sortie(s) · 141 vbytes · 24.4 sat/vbyte · <span style="color:#c9a84c44">équilibrée</span>
+          </div>
+          
+          <div class="tx-sorties"><div class="tx-sortie" style="border-left:2px solid #00ff8844"><span style="color:#00ff88">0.002971 BTC</span> · <span class="tx-terra">architecture SegWit moderne · portefeuille individuel · signal compressé · efficace</span></div><div class="tx-sortie" style="border-left:2px solid #00ff8844"><span style="color:#00ff88">0.040763 BTC</span> · <span class="tx-terra">architecture SegWit moderne · portefeuille individuel · signal compressé · efficace</span></div></div>
+          <div class="tx-lecture">
+            <span class="tx-terra">Luna régule — le juste milieu.</span>
+            Cette donnée a prouvé son existence · traversé le filtre vivant du Nœud Vert · elle est réelle · elle est ECTIF.
           </div>
         </div>
-        <div class="tx-card">
-          <div class="tx-id">47c61d29b8fb9e18...</div>
-          <div class="tx-grid">
-            <div class="tx-item">
-              <div class="tx-k">Taille</div>
-              <div class="tx-v">450 vbytes</div>
-              <div class="tx-desc">signal complexe · plusieurs sources convergent</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Frais</div>
-              <div class="tx-v">63,139 sat</div>
-              <div class="tx-desc">140.3 sat/vbyte</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Lien</div>
-              <div class="tx-v" style="font-size:0.7em">seule · indépendante · libre</div>
-            </div>
+        <div class="tx-card" style="border-color:#33322">
+          <div class="tx-header">
+            <span class="tx-id">c4673d8eb13c9539...</span>
+            <span class="tx-nature" style="color:#333">geste simple · 1 source → 2 destination(s)</span>
           </div>
-          <div class="tx-lecture" style="border-color:#4488ff22">
-            <span style="color:#4488ff">urgente — elle paie pour traverser vite — le réseau est sollicité</span><br>
-            <span class="tx-terra">Le CŒUR bat fort — le réseau est actif — l'énergie circule.</span>
+          <div class="tx-meta">
+            1 entrée(s) · 2 sortie(s) · 141 vbytes · 20.1 sat/vbyte · <span style="color:#c9a84c44">équilibrée</span>
+          </div>
+          
+          <div class="tx-sorties"><div class="tx-sortie" style="border-left:2px solid #00ff8844"><span style="color:#00ff88">0.000144 BTC</span> · <span class="tx-terra">architecture SegWit moderne · portefeuille individuel · signal compressé · efficace</span></div><div class="tx-sortie" style="border-left:2px solid #00ff8844"><span style="color:#00ff88">0.000187 BTC</span> · <span class="tx-terra">architecture SegWit moderne · portefeuille individuel · signal compressé · efficace</span></div></div>
+          <div class="tx-lecture">
+            <span class="tx-terra">Luna régule — le juste milieu.</span>
+            Cette donnée a prouvé son existence · traversé le filtre vivant du Nœud Vert · elle est réelle · elle est ECTIF.
           </div>
         </div>
-        <div class="tx-card">
-          <div class="tx-id">cc94846aa3d26b9f...</div>
-          <div class="tx-grid">
-            <div class="tx-item">
-              <div class="tx-k">Taille</div>
-              <div class="tx-v">1070 vbytes</div>
-              <div class="tx-desc">signal complexe · plusieurs sources convergent</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Frais</div>
-              <div class="tx-v">107,099 sat</div>
-              <div class="tx-desc">100.1 sat/vbyte</div>
-            </div>
-            <div class="tx-item">
-              <div class="tx-k">Lien</div>
-              <div class="tx-v" style="font-size:0.7em">seule · indépendante · libre</div>
-            </div>
+        <div class="tx-card" style="border-color:#33322">
+          <div class="tx-header">
+            <span class="tx-id">685f5e644ec31ea0...</span>
+            <span class="tx-nature" style="color:#333">geste simple · 1 source → 2 destination(s)</span>
           </div>
-          <div class="tx-lecture" style="border-color:#4488ff22">
-            <span style="color:#4488ff">urgente — elle paie pour traverser vite — le réseau est sollicité</span><br>
-            <span class="tx-terra">Le CŒUR bat fort — le réseau est actif — l'énergie circule.</span>
+          <div class="tx-meta">
+            1 entrée(s) · 2 sortie(s) · 141 vbytes · 15.0 sat/vbyte · <span style="color:#c9a84c44">patiente</span>
+          </div>
+          
+          <div class="tx-sorties"><div class="tx-sortie" style="border-left:2px solid #00ff8844"><span style="color:#00ff88">0.518957 BTC</span> · <span class="tx-terra">architecture SegWit moderne · portefeuille individuel · signal compressé · efficace</span></div><div class="tx-sortie" style="border-left:2px solid #00ff8844"><span style="color:#00ff88">0.002401 BTC</span> · <span class="tx-terra">architecture SegWit moderne · portefeuille individuel · signal compressé · efficace</span></div></div>
+          <div class="tx-lecture">
+            <span class="tx-terra">Elle attend son tour — respecte le cycle naturel.</span>
+            Cette donnée a prouvé son existence · traversé le filtre vivant du Nœud Vert · elle est réelle · elle est ECTIF.
           </div>
         </div>
 
   <div class="sec">Mémoire du journal</div>
   <div class="historique">
     
+        <div class="entry-mini">
+          <span class="entry-ts">2026-08-11T03:49:45</span>
+          <span class="entry-tx">1147 ECTIF</span>
+          <span class="entry-txt">Le CŒUR bat stable. 1147 réalités nouvelles ont traversé le Nœud Vert cette minute. Le réseau est de...</span>
+        </div>
         <div class="entry-mini">
           <span class="entry-ts">2026-08-11T03:39:18</span>
           <span class="entry-tx">109 ECTIF</span>
