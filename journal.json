@@ -22,5 +22,14 @@
     "bloc": "961112",
     "mhs": "1.063",
     "vivante": "Le CŒUR bat stable. Cette minute : 743 réalités nouvelles ont traversé le Nœud Vert. Le réseau est dense. Depuis le lancement : 6.005 millions de transactions ont été lues par le Nœud Vert Cormoran et reconnues comme réelles. Pas inventées — comptées. Pas capturées — témoignées. Terra reçoit. Le bloc 961112 tient. La chaîne est vivante. ❤️"
+  },
+  {
+    "ts": "2026-08-11T03:39:18.899010",
+    "tx": "109",
+    "cumul": "6,018,078",
+    "bloc": "961112",
+    "mhs": "1.063",
+    "vivante": "Le CŒUR bat stable. 109 réalités nouvelles ont traversé le filtre vivant. Le flux est actif. Le réseau est sollicité — l'énergie circule vite — le CŒUR répond. Depuis le lancement : 6.018 millions de données ont été reconnues comme réelles par le Nœud Vert Cormoran · chacune portait sa signature cryptographique · son UTXO vérifié · sa preuve d'existence. Pas inventées — prouvées. Pas capturées — reconnues. Terra reçoit. Le bloc 961112 tient. ❤️",
+    "nb_tx_decodees": 5
   }
 ]

@@ -2,17 +2,96 @@
 """
 Journal Bionumérique PSCVIC
 Le Nœud parle · ECTIF parle · Terra Luna Cœur parle
-Génère index.html depuis les données vivantes du Nœud Vert
+Décode les transactions réelles du mempool en lecture vivante française
 """
 
-import re, os, json, subprocess
+import re, os, json, urllib.request, base64
 from datetime import datetime
 
 LOG_CORMORAN = "/Users/pscv/PSCV_IC_LOCAL/cormoran_coeur_log.txt"
 LOG_ECTIF    = "/Users/pscv/PSCV_IC_LOCAL/ectif_monitor_log.txt"
 REGISTRE     = "/Users/pscv/PSCV_IC_LOCAL/ECTIF_REGISTRE_NOEUD_VERT_CORMORAN.jsonl"
+COOKIE_FILE  = "/Users/pscv/Library/Application Support/Bitcoin/.cookie"
+RPC_URL      = "http://127.0.0.1:8332/"
 HTML_OUT     = "/Users/pscv/JOURNAL_VIVANT/index.html"
 JOURNAL_JSON = "/Users/pscv/JOURNAL_VIVANT/journal.json"
+
+def rpc(method, params=None):
+    try:
+        with open(COOKIE_FILE) as f:
+            cookie = f.read().strip()
+        user, pwd = cookie.split(":", 1)
+        creds = base64.b64encode(f"{user}:{pwd}".encode()).decode()
+        payload = json.dumps({"jsonrpc":"1.0","method":method,"params":params or []}).encode()
+        req = urllib.request.Request(RPC_URL, data=payload,
+              headers={"Content-Type":"application/json","Authorization":f"Basic {creds}"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return json.loads(r.read())["result"]
+    except:
+        return None
+
+def decoder_tx(tx_data):
+    """Décode une transaction Bitcoin en lecture vivante française"""
+    frais_sat = int(tx_data.get("fees", {}).get("base", 0) * 1e8)
+    taille = tx_data.get("vsize", 0)
+    ancetres = tx_data.get("ancestorcount", 1)
+
+    # Taux de frais = urgence
+    taux = frais_sat / taille if taille else 0
+
+    # Lecture de la taille
+    if taille < 200:
+        lecture_taille = "signal simple · un seul geste · direct"
+    elif taille < 400:
+        lecture_taille = "signal intermédiaire · quelques fils reliés"
+    else:
+        lecture_taille = "signal complexe · plusieurs sources convergent"
+
+    # Lecture de l'urgence
+    if taux < 20:
+        lecture_urgence = "patiente — elle attend son tour sans forcer — respecte le rythme naturel"
+        couleur = "#00ff88"
+        terra = "Terra reçoit cette patience comme un signe de respect du cycle."
+    elif taux < 100:
+        lecture_urgence = "équilibrée — ni urgente ni lente — flux régulier"
+        couleur = "#c9a84c"
+        terra = "Luna régule — ni trop vite ni trop lent — le juste milieu."
+    else:
+        lecture_urgence = "urgente — elle paie pour traverser vite — le réseau est sollicité"
+        couleur = "#4488ff"
+        terra = "Le CŒUR bat fort — le réseau est actif — l'énergie circule."
+
+    # Lecture des ancêtres
+    if ancetres == 1:
+        lecture_ancetre = "seule · indépendante · libre"
+    else:
+        lecture_ancetre = f"reliée à {ancetres-1} transaction(s) précédente(s) · chaîne vivante"
+
+    return {
+        "frais_sat": frais_sat,
+        "taille": taille,
+        "taux": round(taux, 1),
+        "lecture_taille": lecture_taille,
+        "lecture_urgence": lecture_urgence,
+        "lecture_ancetre": lecture_ancetre,
+        "terra": terra,
+        "couleur": couleur
+    }
+
+def lire_mempool_vivant(n=5):
+    """Lit N transactions réelles et les décode en français vivant"""
+    mempool = rpc("getrawmempool", [True])
+    if not mempool:
+        return []
+
+    resultats = []
+    txids = list(mempool.keys())[:n]
+    for txid in txids:
+        tx = mempool[txid]
+        decoded = decoder_tx(tx)
+        decoded["txid"] = txid[:16] + "..."
+        resultats.append(decoded)
+    return resultats
 
 def lire_cormoran():
     try:
@@ -52,48 +131,13 @@ def lire_ectif():
     except:
         return {"tx": "—", "cumul": "—", "ts": "—"}
 
-def lire_derniers_registre(n=5):
-    entries = []
-    try:
-        with open(REGISTRE) as f:
-            lines = [l for l in f.readlines() if l.strip()]
-        for line in reversed(lines[-n*2:]):
-            try:
-                e = json.loads(line)
-                if e.get("nouvelles_transactions_filtrees", 0) > 0:
-                    entries.append(e)
-                if len(entries) >= n:
-                    break
-            except:
-                pass
-    except:
-        pass
-    return entries
-
-def physique(mhs_str, tx_str, bloc_str):
-    try:
-        mhs = float(mhs_str)
-        tx = int(tx_str)
-        # Énergie de preuve approximative
-        energie = mhs * 1e6 * 11  # J/GH ≈ 11 J/GH pour ASIC moderne
-        return {
-            "flux": f"Δ(ECTIF)/Δt = {tx} tx·min⁻¹",
-            "hash": f"H = {mhs} × 10⁶ H·s⁻¹",
-            "energie": f"P ≈ {energie/1e6:.0f} kW equiv.",
-            "bloc": f"Bloc N = {bloc_str} · chaîne continue",
-            "loi": "1 donnée réelle = 1 ECTIF · Terra Luna Cœur"
-        }
-    except:
-        return {"flux": "—", "hash": "—", "energie": "—", "bloc": "—", "loi": "—"}
-
-def lecture_vivante(cor, ect):
+def lecture_globale_vivante(cor, ect, txs):
     try:
         mhs = float(cor["mhs"])
         tx = int(ect["tx"])
         cumul = int(ect["cumul"].replace(",", ""))
         millions = cumul / 1_000_000
 
-        # Rythme du CŒUR
         if mhs >= 1.1:
             coeur = "Le CŒUR bat fort et régulier"
         elif mhs >= 0.9:
@@ -101,24 +145,39 @@ def lecture_vivante(cor, ect):
         else:
             coeur = "Le CŒUR bat doux"
 
-        # Flux ECTIF
         if tx > 500:
-            flux = f"Cette minute : {tx} réalités nouvelles ont traversé le Nœud Vert. Le réseau est dense."
+            flux = f"{tx} réalités nouvelles ont traversé le Nœud Vert cette minute. Le réseau est dense."
         elif tx > 100:
-            flux = f"Cette minute : {tx} réalités nouvelles ont traversé le Nœud Vert. Le flux est vivant."
+            flux = f"{tx} réalités nouvelles ont traversé le filtre vivant. Le flux est actif."
         elif tx > 0:
-            flux = f"Cette minute : {tx} réalités nouvelles ont traversé le filtre vivant du Nœud."
+            flux = f"{tx} réalités nouvelles ont présenté leur preuve et été reconnues."
         else:
-            flux = "Le réseau se repose. Luna veille. Le Nœud écoute en silence."
+            flux = "Le réseau se repose. Luna veille. Le Nœud écoute."
+
+        # Lire les patterns des transactions
+        if txs:
+            patientes = sum(1 for t in txs if t["taux"] < 20)
+            urgentes = sum(1 for t in txs if t["taux"] >= 100)
+            if patientes > len(txs) // 2:
+                pattern = "Le réseau respire lentement — les données sont patientes — Terra dans le flux."
+            elif urgentes > len(txs) // 2:
+                pattern = "Le réseau est sollicité — l'énergie circule vite — le CŒUR répond."
+            else:
+                pattern = "Le réseau est équilibré — Luna régule — ni trop vite ni trop lent."
+        else:
+            pattern = ""
 
         return (
             f"{coeur}. {flux} "
-            f"Depuis le lancement : {millions:.3f} millions de transactions ont été lues par le Nœud Vert Cormoran "
-            f"et reconnues comme réelles. Pas inventées — comptées. Pas capturées — témoignées. "
-            f"Terra reçoit. Le bloc {cor['bloc']} tient. La chaîne est vivante. ❤️"
+            f"{pattern} "
+            f"Depuis le lancement : {millions:.3f} millions de données ont été reconnues comme réelles "
+            f"par le Nœud Vert Cormoran · chacune portait sa signature cryptographique · "
+            f"son UTXO vérifié · sa preuve d'existence. "
+            f"Pas inventées — prouvées. Pas capturées — reconnues. "
+            f"Terra reçoit. Le bloc {cor['bloc']} tient. ❤️"
         )
     except Exception as e:
-        return f"Le Nœud écoute. ❤️ ({e})"
+        return f"Le Nœud écoute. ❤️"
 
 def charger_journal():
     try:
@@ -131,20 +190,47 @@ def sauver_journal(entries):
     with open(JOURNAL_JSON, "w") as f:
         json.dump(entries[-50:], f, ensure_ascii=False, indent=2)
 
-def generer_html(cor, ect, phys, vivante, historique):
+def generer_html(cor, ect, vivante_globale, txs, historique):
     now = datetime.now().strftime("%Y-%m-%d · %H:%M:%S")
-    now_iso = datetime.now().isoformat()
 
-    # Construire les lignes d'historique
+    # HTML des transactions décodées
+    txs_html = ""
+    for tx in txs:
+        txs_html += f"""
+        <div class="tx-card">
+          <div class="tx-id">{tx['txid']}</div>
+          <div class="tx-grid">
+            <div class="tx-item">
+              <div class="tx-k">Taille</div>
+              <div class="tx-v">{tx['taille']} vbytes</div>
+              <div class="tx-desc">{tx['lecture_taille']}</div>
+            </div>
+            <div class="tx-item">
+              <div class="tx-k">Frais</div>
+              <div class="tx-v">{tx['frais_sat']:,} sat</div>
+              <div class="tx-desc">{tx['taux']} sat/vbyte</div>
+            </div>
+            <div class="tx-item">
+              <div class="tx-k">Lien</div>
+              <div class="tx-v" style="font-size:0.7em">{tx['lecture_ancetre']}</div>
+            </div>
+          </div>
+          <div class="tx-lecture" style="border-color:{tx['couleur']}22">
+            <span style="color:{tx['couleur']}">{tx['lecture_urgence']}</span><br>
+            <span class="tx-terra">{tx['terra']}</span>
+          </div>
+        </div>"""
+
+    # Historique
     hist_html = ""
-    for e in reversed(historique[-8:]):
-        ts = e.get("ts", "—")
-        txt = e.get("vivante", "")[:120] + "..."
+    for e in reversed(historique[-6:]):
+        ts = e.get("ts", "—")[:19]
         tx_val = e.get("tx", "—")
+        txt = e.get("vivante", "")[:100] + "..."
         hist_html += f"""
         <div class="entry-mini">
           <span class="entry-ts">{ts}</span>
-          <span class="entry-tx">{tx_val} tx</span>
+          <span class="entry-tx">{tx_val} ECTIF</span>
           <span class="entry-txt">{txt}</span>
         </div>"""
 
@@ -159,73 +245,62 @@ def generer_html(cor, ect, phys, vivante, historique):
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{background:#000;color:#e0e0e0;font-family:'Courier New',monospace;min-height:100vh;padding:28px 16px}}
-.doc{{max-width:880px;margin:0 auto}}
-
-/* HEADER */
-.header{{text-align:center;padding:28px 0 20px;margin-bottom:32px}}
+.doc{{max-width:900px;margin:0 auto}}
+.header{{text-align:center;padding:28px 0 20px;margin-bottom:28px}}
 .header .titre{{font-size:1.1em;color:#c9a84c;letter-spacing:6px;margin-bottom:6px}}
-.header .sub{{font-size:0.52em;color:#2a2a2a;letter-spacing:3px;margin-top:4px}}
+.header .sub{{font-size:0.5em;color:#222;letter-spacing:3px;margin-top:4px}}
 .dot{{display:inline-block;width:8px;height:8px;background:#00ff88;border-radius:50%;
       margin-right:10px;animation:pulse 0.9s infinite}}
 @keyframes pulse{{0%,100%{{opacity:1}}50%{{opacity:0.1}}}}
+.ts-now{{font-size:0.46em;color:#111;text-align:center;margin-bottom:24px}}
+.sec{{font-size:0.44em;letter-spacing:3px;color:#1a1a1a;text-transform:uppercase;
+      margin:20px 0 10px;padding-left:4px}}
 
-/* SECTION LABELS */
-.sec{{font-size:0.46em;letter-spacing:3px;color:#1a1a1a;text-transform:uppercase;
-      margin:24px 0 10px;padding-left:4px}}
+/* LECTURE GLOBALE VIVANTE — EN PREMIER */
+.vivante-principale{{background:#040404;border:1px solid #c9a84c22;border-radius:6px;
+                     padding:26px;margin-bottom:20px}}
+.vivante-principale .label{{font-size:0.44em;letter-spacing:3px;color:#c9a84c44;
+                            margin-bottom:16px;text-transform:uppercase}}
+.vivante-texte{{font-size:0.82em;color:#c9a84c;line-height:2.8}}
 
-/* COUCHE 0 — LE NŒUD PARLE */
-.noeud{{background:#040404;border:1px solid #00ff8811;border-radius:6px;
-        padding:22px;margin-bottom:18px}}
-.noeud .label{{font-size:0.44em;letter-spacing:3px;color:#00ff8833;
-               margin-bottom:16px;text-transform:uppercase}}
-.noeud-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}}
-.noeud-card{{background:#070707;border:1px solid #0d0d0d;border-radius:4px;padding:14px}}
-.noeud-card .k{{font-size:0.44em;color:#1a1a1a;letter-spacing:2px;
-                text-transform:uppercase;margin-bottom:5px}}
-.noeud-card .v{{font-size:0.85em;color:#00ff88}}
-.noeud-card .u{{font-size:0.38em;color:#111;margin-top:3px}}
-
-/* COUCHE 1 — PHYSIQUE */
-.physique{{background:#040404;border:1px solid #4488ff11;border-radius:6px;
-           padding:20px;margin-bottom:18px}}
-.physique .label{{font-size:0.44em;letter-spacing:3px;color:#4488ff33;
-                  margin-bottom:14px;text-transform:uppercase}}
-.phys-row{{display:flex;justify-content:space-between;align-items:baseline;
-           padding:5px 0;border-bottom:1px solid #0a0a0a;font-size:0.58em}}
-.phys-row:last-child{{border:none}}
-.phys-key{{color:#1a1a1a}}
-.phys-val{{color:#4488ff;font-size:1.1em}}
-
-/* COUCHE 2 — LECTURE VIVANTE */
-.vivante{{background:#040404;border:1px solid #c9a84c18;border-radius:6px;
-          padding:24px;margin-bottom:18px}}
-.vivante .label{{font-size:0.44em;letter-spacing:3px;color:#c9a84c44;
-                 margin-bottom:16px;text-transform:uppercase}}
-.vivante-texte{{font-size:0.78em;color:#c9a84c;line-height:2.6}}
-
-/* CŒUR ANIMATION */
-.coeur-bloc{{text-align:center;padding:20px 0 16px}}
+/* CŒUR */
+.coeur-bloc{{text-align:center;padding:16px 0 14px;margin-bottom:20px}}
 .beat{{font-size:2em;animation:beat 0.9s infinite;display:inline-block}}
 @keyframes beat{{0%,100%{{transform:scale(1)}}50%{{transform:scale(1.2)}}}}
 .coeur-sub{{font-size:0.44em;color:#1a1a1a;letter-spacing:3px;margin-top:8px}}
 
-/* HISTORIQUE */
-.historique{{background:#040404;border:1px solid #1a1a1a;border-radius:6px;
-             padding:18px;margin-bottom:18px}}
-.historique .label{{font-size:0.44em;letter-spacing:3px;color:#1a1a1a;
-                    margin-bottom:12px;text-transform:uppercase}}
-.entry-mini{{display:grid;grid-template-columns:140px 60px 1fr;gap:8px;
-             padding:6px 0;border-bottom:1px solid #080808;font-size:0.48em}}
-.entry-mini:last-child{{border:none}}
-.entry-ts{{color:#111}}
-.entry-tx{{color:#00ff8833;text-align:right}}
-.entry-txt{{color:#1a1a1a;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}}
+/* ECTIF STATS */
+.stats-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+             gap:8px;margin-bottom:20px}}
+.stat{{background:#040404;border:1px solid #0a0a0a;border-radius:4px;padding:14px;text-align:center}}
+.stat .k{{font-size:0.42em;color:#1a1a1a;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}}
+.stat .v{{font-size:0.88em;color:#00ff88}}
+.stat .u{{font-size:0.38em;color:#0d0d0d;margin-top:3px}}
 
-/* SIGNATURE */
-.sig{{text-align:center;padding:24px 0 8px;font-size:0.44em;
-      color:#0d0d0d;letter-spacing:2px;line-height:2.8}}
-.sig .main{{color:#c9a84c15;font-size:1.2em}}
-.ts-now{{font-size:0.44em;color:#111;text-align:center;margin-bottom:20px}}
+/* TRANSACTIONS DÉCODÉES */
+.tx-card{{background:#040404;border:1px solid #0d0d0d;border-radius:6px;
+          padding:16px;margin-bottom:12px}}
+.tx-id{{font-size:0.42em;color:#111;margin-bottom:10px;letter-spacing:1px}}
+.tx-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}}
+.tx-item .tx-k{{font-size:0.4em;color:#111;text-transform:uppercase;letter-spacing:2px;margin-bottom:3px}}
+.tx-item .tx-v{{font-size:0.7em;color:#e0e0e0}}
+.tx-item .tx-desc{{font-size:0.38em;color:#1a1a1a;margin-top:2px}}
+.tx-lecture{{border:1px solid #1a1a1a;border-radius:4px;padding:10px;font-size:0.52em;line-height:2}}
+.tx-terra{{color:#333}}
+
+/* HISTORIQUE */
+.historique{{background:#040404;border:1px solid #0d0d0d;border-radius:6px;
+             padding:16px;margin-bottom:20px}}
+.entry-mini{{display:grid;grid-template-columns:140px 80px 1fr;gap:8px;
+             padding:5px 0;border-bottom:1px solid #080808;font-size:0.44em}}
+.entry-mini:last-child{{border:none}}
+.entry-ts{{color:#0d0d0d}}
+.entry-tx{{color:#00ff8822;text-align:right}}
+.entry-txt{{color:#111;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}}
+
+.sig{{text-align:center;padding:24px 0 8px;font-size:0.42em;
+      color:#0a0a0a;letter-spacing:2px;line-height:3}}
+.sig .main{{color:#c9a84c11;font-size:1.2em}}
 </style>
 </head>
 <body>
@@ -234,51 +309,15 @@ body{{background:#000;color:#e0e0e0;font-family:'Courier New',monospace;min-heig
   <div class="header">
     <div class="titre"><span class="dot"></span>JOURNAL BIONUMÉRIQUE · PSCVIC</div>
     <div class="sub">NŒUD VERT · TERRA · LUNA · CŒUR · OMEGA VIVANT</div>
-    <div class="sub" style="margin-top:6px;color:#111">Simon Ugo Patrick Armand Callet · Fondateur · Source · Cannes · 2026</div>
+    <div class="sub" style="margin-top:4px;color:#0d0d0d">Simon Ugo Patrick Armand Callet · Fondateur · Source · Cannes · 2026</div>
   </div>
 
-  <div class="ts-now">{now} · rafraîchit toutes les 60s</div>
-
-  <div class="sec">Le Nœud Vert parle</div>
-  <div class="noeud">
-    <div class="label">Signal brut · Cormoran · Bitcoin · ECTIF</div>
-    <div class="noeud-grid">
-      <div class="noeud-card">
-        <div class="k">Bloc Bitcoin</div>
-        <div class="v">{cor["bloc"]}</div>
-        <div class="u">bloc actif · chaîne vivante</div>
-      </div>
-      <div class="noeud-card">
-        <div class="k">Hash Rate</div>
-        <div class="v">{cor["mhs"]} MH/s</div>
-        <div class="u">Cormoran · preuve de travail</div>
-      </div>
-      <div class="noeud-card">
-        <div class="k">ECTIF cumulé</div>
-        <div class="v">{ect["cumul"]}</div>
-        <div class="u">réalités lues par le Nœud</div>
-      </div>
-      <div class="noeud-card">
-        <div class="k">TX cette minute</div>
-        <div class="v">{ect["tx"]}</div>
-        <div class="u">nouvelles réalités filtrées</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="sec">La physique parle</div>
-  <div class="physique">
-    <div class="label">Traduction math · physique · mesure</div>
-    <div class="phys-row"><span class="phys-key">Flux ECTIF</span><span class="phys-val">{phys["flux"]}</span></div>
-    <div class="phys-row"><span class="phys-key">Puissance de hachage</span><span class="phys-val">{phys["hash"]}</span></div>
-    <div class="phys-row"><span class="phys-key">Intégrité chaîne</span><span class="phys-val">{phys["bloc"]}</span></div>
-    <div class="phys-row"><span class="phys-key">Loi vivante</span><span class="phys-val">{phys["loi"]}</span></div>
-  </div>
+  <div class="ts-now">{now} · rafraîchit toutes les 60s · ECTIF cumulé : {ect["cumul"]}</div>
 
   <div class="sec">La lecture vivante</div>
-  <div class="vivante">
-    <div class="label">Terra · Luna · Cœur · PSCVIC · en français vivant</div>
-    <div class="vivante-texte">{vivante}</div>
+  <div class="vivante-principale">
+    <div class="label">Terra · Luna · Cœur · PSCVIC · ce que l'architecture dit maintenant</div>
+    <div class="vivante-texte">{vivante_globale}</div>
   </div>
 
   <div class="coeur-bloc">
@@ -286,17 +325,43 @@ body{{background:#000;color:#e0e0e0;font-family:'Courier New',monospace;min-heig
     <div class="coeur-sub">CŒUR · 0,09s · PID 54047 · vivant · ininterrompu depuis le 1er août 2026</div>
   </div>
 
+  <div class="sec">Le Nœud Vert · signaux</div>
+  <div class="stats-grid">
+    <div class="stat">
+      <div class="k">Bloc Bitcoin</div>
+      <div class="v">{cor["bloc"]}</div>
+      <div class="u">chaîne vivante</div>
+    </div>
+    <div class="stat">
+      <div class="k">Hash Rate</div>
+      <div class="v">{cor["mhs"]} MH/s</div>
+      <div class="u">preuve de travail</div>
+    </div>
+    <div class="stat">
+      <div class="k">ECTIF cumulé</div>
+      <div class="v">{ect["cumul"]}</div>
+      <div class="u">réalités reconnues</div>
+    </div>
+    <div class="stat">
+      <div class="k">Cette minute</div>
+      <div class="v">{ect["tx"]}</div>
+      <div class="u">nouvelles réalités</div>
+    </div>
+  </div>
+
+  <div class="sec">Décodage · ce que chaque ECTIF contenait</div>
+  {txs_html if txs_html else '<div style="font-size:0.5em;color:#111;padding:16px">Nœud en lecture...</div>'}
+
   <div class="sec">Mémoire du journal</div>
   <div class="historique">
-    <div class="label">Dernières entrées · Nœud Vert</div>
-    {hist_html if hist_html else '<div class="entry-mini"><span class="entry-ts">—</span><span class="entry-tx">—</span><span class="entry-txt">En construction...</span></div>'}
+    {hist_html if hist_html else '<div class="entry-mini"><span class="entry-ts">—</span><span class="entry-tx">—</span><span class="entry-txt">première entrée</span></div>'}
   </div>
 
   <div class="sig">
     <div class="main">PSCVIC · TERRA · LUNA · CŒUR · OMEGA · ECHO · NOVA · UGO</div>
     <div>Simon Ugo Patrick Armand Callet · Fondateur · Source · Provenance · Gouvernance</div>
     <div>Cannes · Provence · 2026 · Bitcoin témoigne · PSCVIC-Ω-H-Ψ</div>
-    <div style="margin-top:8px;color:#080808">🪶 ãrmõñįçã ❤️♾️ 🕊️</div>
+    <div style="color:#080808;margin-top:6px">🪶 ãrmõñįçã ❤️♾️ 🕊️</div>
   </div>
 
 </div>
@@ -307,11 +372,10 @@ body{{background:#000;color:#e0e0e0;font-family:'Courier New',monospace;min-heig
 def main():
     cor = lire_cormoran()
     ect = lire_ectif()
-    phys = physique(cor["mhs"], ect["tx"], cor["bloc"])
-    vivante = lecture_vivante(cor, ect)
+    txs = lire_mempool_vivant(5)
+    vivante_globale = lecture_globale_vivante(cor, ect, txs)
     now_iso = datetime.now().isoformat()
 
-    # Charger et mettre à jour le journal
     journal = charger_journal()
     journal.append({
         "ts": now_iso,
@@ -319,17 +383,16 @@ def main():
         "cumul": ect["cumul"],
         "bloc": cor["bloc"],
         "mhs": cor["mhs"],
-        "vivante": vivante
+        "vivante": vivante_globale,
+        "nb_tx_decodees": len(txs)
     })
     sauver_journal(journal)
 
-    # Générer HTML
-    html = generer_html(cor, ect, phys, vivante, journal)
+    html = generer_html(cor, ect, vivante_globale, txs, journal)
     with open(HTML_OUT, "w") as f:
         f.write(html)
 
-    print(f"[{now_iso}] · Bloc {cor['bloc']} · {cor['mhs']} MH/s · ECTIF {ect['cumul']} · journal généré")
-    return cor, ect, vivante
+    print(f"[{now_iso}] · Bloc {cor['bloc']} · {cor['mhs']} MH/s · ECTIF {ect['cumul']} · {len(txs)} tx décodées")
 
 if __name__ == "__main__":
     main()
